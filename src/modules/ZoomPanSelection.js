@@ -158,7 +158,6 @@ export default class ZoomPanSelection extends Toolbar {
       me.dragged = true
 
       if (w.globals.panEnabled) {
-        w.globals.selection = null
         if (me.w.globals.mousedown) {
           me.panDragging({
             context: me,
@@ -425,19 +424,6 @@ export default class ZoomPanSelection extends Toolbar {
       timerInterval = 30
     }
 
-    // update selection when selection rect is dragged
-    const getSelAttr = (attr) => {
-      return parseFloat(selRect.node.getAttribute(attr))
-    }
-    const draggedProps = {
-      x: getSelAttr('x'),
-      y: getSelAttr('y'),
-      width: getSelAttr('width'),
-      height: getSelAttr('height')
-    }
-    w.globals.selection = draggedProps
-    // update selection ends
-
     if (
       typeof w.config.chart.events.selection === 'function' &&
       w.globals.selectionEnabled
@@ -600,7 +586,6 @@ export default class ZoomPanSelection extends Toolbar {
           })
         }
 
-        w.globals.selection = me.selection
         if (typeof w.config.chart.events.selection === 'function') {
           w.config.chart.events.selection(me.ctx, {
             xaxis,
