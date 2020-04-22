@@ -125,9 +125,9 @@ export default class ZoomPanSelection extends Toolbar {
       }
     }
 
-    const falsePositives =
-      e.target.classList.contains('apexcharts-selection-rect') ||
-      e.target.parentNode.classList.contains('apexcharts-toolbar')
+    const falsePositives = e.target.parentNode.classList.contains(
+      'apexcharts-toolbar'
+    )
 
     if (falsePositives) return
 
