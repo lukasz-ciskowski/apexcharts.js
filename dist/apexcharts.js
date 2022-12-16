@@ -1,5 +1,5 @@
 /*!
- * ApexCharts v3.15.33
+ * ApexCharts v3.15.34
  * (c) 2018-2022 Juned Chhipa
  * Released under the MIT License.
  */
