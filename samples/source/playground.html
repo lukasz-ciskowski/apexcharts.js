@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="../../dist/apexcharts.js"></script>
+    <title>Playground document</title>
+  </head>
+  <body>
+    <div id="chart" />
+    <script>
+      var options = {
+        series: [
+          {
+            name: 'Desktops',
+            data: [
+              [-30, 20],
+              [-15, 25],
+              [-5, 40],
+              [0, 20],
+              [5, 35],
+              [15, 20]
+            ]
+          }
+        ],
+        chart: {
+          height: 350,
+          type: 'line',
+          zoom: {
+            enabled: false
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'straight'
+        },
+        title: {
+          text: 'Product Trends by Month',
+          align: 'left'
+        },
+        grid: {
+          row: {
+            colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+            opacity: 0.5
+          }
+        },
+        xaxis: {
+          type: 'numeric',
+          ticks: [-30, -15, -5, 0, 5, 15]
+        }
+      }
+
+      var chart = new ApexCharts(document.querySelector('#chart'), options)
+      chart.render()
+    </script>
+  </body>
+</html>

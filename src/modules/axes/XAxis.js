@@ -15,7 +15,7 @@ export default class XAxis {
     const w = this.w
     this.axesUtils = new AxesUtils(ctx)
 
-    this.xaxisLabels = w.globals.labels.slice()
+    this.xaxisLabels = w.config.xaxis.ticks || w.globals.labels.slice()
     if (w.globals.timescaleLabels.length > 0 && !w.globals.isBarHorizontal) {
       //  timeline labels are there and chart is not rangeabr timeline
       this.xaxisLabels = w.globals.timescaleLabels.slice()
@@ -89,11 +89,22 @@ export default class XAxis {
       xPos = xPos + colWidth + w.config.xaxis.labels.offsetX
     }
 
+    const ticks = w.config.xaxis.ticks || []
     let labelsLen = labels.length
 
     if (w.config.xaxis.labels.show) {
       for (let i = 0; i <= labelsLen - 1; i++) {
-        let x = xPos - colWidth / 2 + w.config.xaxis.labels.offsetX
+        let x = 0 // xPos - colWidth / 2 + w.config.xaxis.labels.offsetX
+
+        if (ticks.length) {
+          const xValue = ticks[i]
+
+          let min = w.globals.minX
+          const range = w.globals.xRange
+          x = (xValue - min) / (range / w.globals.gridWidth)
+        } else {
+          x = xPos - colWidth / 2 + w.config.xaxis.labels.offsetX
+        }
 
         if (
           i === 0 &&

@@ -776,6 +776,7 @@ type ApexTooltip = {
 type ApexXAxis = {
   type?: 'category' | 'datetime' | 'numeric'
   categories?: string[] | number[]
+  ticks?: string[] | number[]
   labels?: {
     show?: boolean
     rotate?: number

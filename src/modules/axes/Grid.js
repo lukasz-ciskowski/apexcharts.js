@@ -235,12 +235,34 @@ class Grid {
       }
     }
 
+    const manualCategoryLines = ({ points, y1, y2 }) => {
+      let x1 = 0
+
+      for (let i = 0; i < points.length; i++) {
+        const xValue = points[i]
+        let min = w.globals.minX
+        const range = w.globals.xRange
+        x1 = (xValue - min) / (range / w.globals.gridWidth)
+
+        this._drawGridLines({
+          i,
+          x1,
+          y1,
+          y2,
+          xCount,
+          x2: x1,
+          parent: this.elgridLinesV
+        })
+      }
+    }
+
     const categoryLines = ({ xC, x1, y1, x2, y2 }) => {
       for (let i = 0; i < xC + (w.globals.isXNumeric ? 0 : 1); i++) {
         if (i === 0 && xC === 1 && w.globals.dataPoints === 1) {
           // single datapoint
           x1 = w.globals.gridWidth / 2
         }
+
         this._drawGridLines({
           i,
           x1,
@@ -258,18 +280,22 @@ class Grid {
 
     // draw vertical lines
     if (w.config.grid.xaxis.lines.show || w.config.xaxis.axisTicks.show) {
-      let x1 = w.globals.padHorizontal
-      let y1 = 0
-      let x2
-      let y2 = w.globals.gridHeight
-
-      if (w.globals.timescaleLabels.length) {
-        datetimeLines({ xC: xCount, x1, y1, x2, y2 })
+      if (w.config.xaxis.ticks) {
+        manualCategoryLines({ points: w.config.xaxis.ticks })
       } else {
-        if (w.globals.isXNumeric) {
-          xCount = w.globals.xAxisScale.result.length
+        let x1 = w.globals.padHorizontal
+        let y1 = 0
+        let x2
+        let y2 = w.globals.gridHeight
+
+        if (w.globals.timescaleLabels.length) {
+          datetimeLines({ xC: xCount, x1, y1, x2, y2 })
+        } else {
+          if (w.globals.isXNumeric) {
+            xCount = w.globals.xAxisScale.result.length
+          }
+          categoryLines({ xC: xCount, x1, y1, x2, y2 })
         }
-        categoryLines({ xC: xCount, x1, y1, x2, y2 })
       }
     }
 
