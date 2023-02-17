@@ -354,7 +354,7 @@ export default class ApexCharts {
     overwriteInitialConfig = true
   ) {
     const w = this.w
-    if (options.series) {
+    if (options.series && this.series) {
       this.series.resetSeries(false)
       if (options.series.length && options.series[0].data) {
         options.series = options.series.map((s, i) => {

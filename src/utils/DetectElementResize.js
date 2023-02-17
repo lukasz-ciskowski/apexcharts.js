@@ -9,10 +9,14 @@
 
 (function () {
   function resetTriggers (element) {
+    if (!element) return
     var triggers = element.__resizeTriggers__,
-      expand = triggers.firstElementChild,
-      contract = triggers.lastElementChild,
-      expandChild = expand.firstElementChild
+      expand = triggers ? triggers.firstElementChild : null,
+      contract = triggers ? triggers.lastElementChild : null,
+      expandChild = expand ? expand.firstElementChild : null
+
+    if (!expand || !contract || !expandChild) return
+    
     contract.scrollLeft = contract.scrollWidth
     contract.scrollTop = contract.scrollHeight
     expandChild.style.width = expand.offsetWidth + 1 + 'px'

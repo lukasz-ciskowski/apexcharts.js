@@ -1,6 +1,6 @@
 /*!
- * ApexCharts v3.15.34
- * (c) 2018-2022 Juned Chhipa
+ * ApexCharts v3.25.0
+ * (c) 2018-2023 Juned Chhipa
  * Released under the MIT License.
  */
 (function (global, factory) {
@@ -13577,6 +13577,7 @@
           }
         }
 
+        if (!e.target.parentNode) return;
         var falsePositives = e.target.parentNode.classList.contains('apexcharts-toolbar');
         if (falsePositives) return;
         me.clientX = e.type === 'touchmove' || e.type === 'touchstart' ? e.touches[0].clientX : e.type === 'touchend' ? e.changedTouches[0].clientX : e.clientX;
@@ -27617,10 +27618,12 @@
   **/
   (function () {
     function resetTriggers(element) {
+      if (!element) return;
       var triggers = element.__resizeTriggers__,
-          expand = triggers.firstElementChild,
-          contract = triggers.lastElementChild,
-          expandChild = expand.firstElementChild;
+          expand = triggers ? triggers.firstElementChild : null,
+          contract = triggers ? triggers.lastElementChild : null,
+          expandChild = expand ? expand.firstElementChild : null;
+      if (!expand || !contract || !expandChild) return;
       contract.scrollLeft = contract.scrollWidth;
       contract.scrollTop = contract.scrollHeight;
       expandChild.style.width = expand.offsetWidth + 1 + 'px';
@@ -28181,7 +28184,7 @@
         var overwriteInitialConfig = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
         var w = this.w;
 
-        if (options.series) {
+        if (options.series && this.series) {
           this.series.resetSeries(false);
 
           if (options.series.length && options.series[0].data) {
