@@ -36,7 +36,7 @@ export default class Range {
       // If yMin and yMax are identical, then
       // adjust the yMin and yMax values to actually
       // make a graph. Also avoids division by zero errors.
-      yMin = yMin === 0 ? 0 : yMin - 0.5 // some small value
+      yMin = yMin === 0 ? -2 : yMin - 0.5 // some small value
       yMax = yMax === 0 ? 2 : yMax + 0.5 // some small value
     }
 

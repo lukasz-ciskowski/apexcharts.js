@@ -1,5 +1,5 @@
 /*!
- * ApexCharts v3.25.0
+ * ApexCharts v3.26.0
  * (c) 2018-2023 Juned Chhipa
  * Released under the MIT License.
  */
@@ -8918,7 +8918,7 @@
           // If yMin and yMax are identical, then
           // adjust the yMin and yMax values to actually
           // make a graph. Also avoids division by zero errors.
-          yMin = yMin === 0 ? 0 : yMin - 0.5; // some small value
+          yMin = yMin === 0 ? -2 : yMin - 0.5; // some small value
 
           yMax = yMax === 0 ? 2 : yMax + 0.5; // some small value
         } // Calculate Min amd Max graphical labels and graph
@@ -9420,7 +9420,7 @@
         var cnf = this.w.config;
         var gl = this.w.globals;
         var maxY = -Number.MAX_VALUE;
-        var minY = Number.MIN_VALUE;
+        var minY = Number.MAX_VALUE;
 
         if (len === null) {
           len = startingIndex + 1;
@@ -9446,6 +9446,7 @@
 
             if (val !== null && Utils.isNumber(val)) {
               maxY = Math.max(maxY, seriesMax[i][j]);
+              minY = Math.min(minY, seriesMin[i][j]);
               lowestY = Math.min(lowestY, seriesMin[i][j]);
               highestY = Math.max(highestY, seriesMin[i][j]);
 
@@ -9460,10 +9461,6 @@
               if (Utils.isFloat(val)) {
                 val = Utils.noExponents(val);
                 gl.yValueDecimal = Math.max(gl.yValueDecimal, val.toString().split('.')[1].length);
-              }
-
-              if (minY > seriesMin[i][j] && seriesMin[i][j] < 0) {
-                minY = seriesMin[i][j];
               }
             } else {
               gl.hasNullValues = true;
@@ -9515,15 +9512,15 @@
         if (cnf.chart.stacked) {
           this._setStackedMinMax();
         } // if the numbers are too big, reduce the range
-        // for eg, if number is between 100000-110000, putting 0 as the lowest value is not so good idea. So change the gl.minY for line/area/candlesticks
+        // for eg, if number is between 100000-110000, putting 0 as the lowest value is not so good idea. So change the gl.minY for line/area/candlesticks/boxPlot
 
 
-        if (cnf.chart.type === 'line' || cnf.chart.type === 'area' || cnf.chart.type === 'candlestick') {
+        if (cnf.chart.type === 'line' || cnf.chart.type === 'area' || cnf.chart.type === 'candlestick' || cnf.chart.type === 'boxPlot' || cnf.chart.type === 'rangeBar' && !gl.isBarHorizontal) {
           if (gl.minY === Number.MIN_VALUE && lowestYInAllSeries !== -Number.MAX_VALUE && lowestYInAllSeries !== gl.maxY // single value possibility
           ) {
               var diff = gl.maxY - lowestYInAllSeries;
 
-              if (lowestYInAllSeries >= 0 && lowestYInAllSeries <= 10) {
+              if (lowestYInAllSeries >= 0 && lowestYInAllSeries <= 10 || cnf.yaxis[0].min !== undefined || cnf.yaxis[0].max !== undefined) {
                 // if minY is already 0/low value, we don't want to go negatives here - so this check is essential.
                 diff = 0;
               }
@@ -9543,28 +9540,31 @@
             }
         }
 
-        cnf.yaxis.map(function (yaxe, index) {
+        cnf.yaxis.forEach(function (yaxe, index) {
           // override all min/max values by user defined values (y axis)
-          var minmax = [{
-            type: 'min',
-            yArr: gl.minYArr,
-            y: gl.minY
-          }, {
-            type: 'max',
-            yArr: gl.maxYArr,
-            y: gl.maxY
-          }];
-          minmax.forEach(function (m) {
-            if (yaxe[m.type] !== undefined) {
-              if (typeof yaxe[m.type] === 'number') {
-                m.yArr[index] = yaxe[m.type];
-              } else if (typeof yaxe[m.type] === 'function') {
-                m.yArr[index] = yaxe[m.type](m.y);
-              }
+          if (yaxe.max !== undefined) {
+            if (typeof yaxe.max === 'number') {
+              gl.maxYArr[index] = yaxe.max;
+            } else if (typeof yaxe.max === 'function') {
+              // fixes apexcharts.js/issues/2098
+              gl.maxYArr[index] = yaxe.max(gl.isMultipleYAxis ? gl.maxYArr[index] : gl.maxY);
+            } // gl.maxY is for single y-axis chart, it will be ignored in multi-yaxis
 
-              m.y = m.yArr[index];
-            }
-          });
+
+            gl.maxY = gl.maxYArr[index];
+          }
+
+          if (yaxe.min !== undefined) {
+            if (typeof yaxe.min === 'number') {
+              gl.minYArr[index] = yaxe.min;
+            } else if (typeof yaxe.min === 'function') {
+              // fixes apexcharts.js/issues/2098
+              gl.minYArr[index] = yaxe.min(gl.isMultipleYAxis ? gl.minYArr[index] === Number.MIN_VALUE ? 0 : gl.minYArr[index] : gl.minY);
+            } // gl.minY is for single y-axis chart, it will be ignored in multi-yaxis
+
+
+            gl.minY = gl.minYArr[index];
+          }
         }); // for horizontal bar charts, we need to check xaxis min/max as user may have specified there
 
         if (gl.isBarHorizontal) {
@@ -9586,6 +9586,7 @@
           });
         } else {
           this.scales.setYScaleForIndex(0, gl.minY, gl.maxY);
+          console.log(gl.yAxisScale);
           gl.minY = gl.yAxisScale[0].niceMin;
           gl.maxY = gl.yAxisScale[0].niceMax;
           gl.minYArr[0] = gl.yAxisScale[0].niceMin;
@@ -9596,7 +9597,8 @@
           minY: gl.minY,
           maxY: gl.maxY,
           minYArr: gl.minYArr,
-          maxYArr: gl.maxYArr
+          maxYArr: gl.maxYArr,
+          yAxisScale: gl.yAxisScale
         };
       }
     }, {

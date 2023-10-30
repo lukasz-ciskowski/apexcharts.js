@@ -346,7 +346,6 @@ class Line {
     const minY = Utils.isNumber(w.globals.minYArr[realIndex])
       ? w.globals.minYArr[realIndex]
       : w.globals.minY
-
     const iterations =
       w.globals.dataPoints > 1 ? w.globals.dataPoints - 1 : w.globals.dataPoints
 

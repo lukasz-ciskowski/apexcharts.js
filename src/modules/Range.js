@@ -31,7 +31,7 @@ class Range {
     const cnf = this.w.config
     const gl = this.w.globals
     let maxY = -Number.MAX_VALUE
-    let minY = Number.MIN_VALUE
+    let minY = Number.MAX_VALUE
 
     if (len === null) {
       len = startingIndex + 1
@@ -55,6 +55,7 @@ class Range {
         let val = series[i][j]
         if (val !== null && Utils.isNumber(val)) {
           maxY = Math.max(maxY, seriesMax[i][j])
+          minY = Math.min(minY, seriesMin[i][j])
           lowestY = Math.min(lowestY, seriesMin[i][j])
           highestY = Math.max(highestY, seriesMin[i][j])
 
@@ -72,9 +73,6 @@ class Range {
               gl.yValueDecimal,
               val.toString().split('.')[1].length
             )
-          }
-          if (minY > seriesMin[i][j] && seriesMin[i][j] < 0) {
-            minY = seriesMin[i][j]
           }
         } else {
           gl.hasNullValues = true
@@ -94,7 +92,6 @@ class Range {
     if (cnf.chart.type === 'bar' && minY < 0 && maxY < 0) {
       maxY = 0
     }
-
     return {
       minY,
       maxY,
@@ -137,11 +134,13 @@ class Range {
     }
 
     // if the numbers are too big, reduce the range
-    // for eg, if number is between 100000-110000, putting 0 as the lowest value is not so good idea. So change the gl.minY for line/area/candlesticks
+    // for eg, if number is between 100000-110000, putting 0 as the lowest value is not so good idea. So change the gl.minY for line/area/candlesticks/boxPlot
     if (
       cnf.chart.type === 'line' ||
       cnf.chart.type === 'area' ||
-      cnf.chart.type === 'candlestick'
+      cnf.chart.type === 'candlestick' ||
+      cnf.chart.type === 'boxPlot' ||
+      (cnf.chart.type === 'rangeBar' && !gl.isBarHorizontal)
     ) {
       if (
         gl.minY === Number.MIN_VALUE &&
@@ -149,7 +148,11 @@ class Range {
         lowestYInAllSeries !== gl.maxY // single value possibility
       ) {
         let diff = gl.maxY - lowestYInAllSeries
-        if (lowestYInAllSeries >= 0 && lowestYInAllSeries <= 10) {
+        if (
+          (lowestYInAllSeries >= 0 && lowestYInAllSeries <= 10) ||
+          cnf.yaxis[0].min !== undefined ||
+          cnf.yaxis[0].max !== undefined
+        ) {
           // if minY is already 0/low value, we don't want to go negatives here - so this check is essential.
           diff = 0
         }
@@ -167,30 +170,37 @@ class Range {
       }
     }
 
-    cnf.yaxis.map((yaxe, index) => {
+    cnf.yaxis.forEach((yaxe, index) => {
       // override all min/max values by user defined values (y axis)
-      const minmax = [
-        {
-          type: 'min',
-          yArr: gl.minYArr,
-          y: gl.minY
-        },
-        {
-          type: 'max',
-          yArr: gl.maxYArr,
-          y: gl.maxY
+      if (yaxe.max !== undefined) {
+        if (typeof yaxe.max === 'number') {
+          gl.maxYArr[index] = yaxe.max
+        } else if (typeof yaxe.max === 'function') {
+          // fixes apexcharts.js/issues/2098
+          gl.maxYArr[index] = yaxe.max(
+            gl.isMultipleYAxis ? gl.maxYArr[index] : gl.maxY
+          )
         }
-      ]
-      minmax.forEach((m) => {
-        if (yaxe[m.type] !== undefined) {
-          if (typeof yaxe[m.type] === 'number') {
-            m.yArr[index] = yaxe[m.type]
-          } else if (typeof yaxe[m.type] === 'function') {
-            m.yArr[index] = yaxe[m.type](m.y)
-          }
-          m.y = m.yArr[index]
+
+        // gl.maxY is for single y-axis chart, it will be ignored in multi-yaxis
+        gl.maxY = gl.maxYArr[index]
+      }
+      if (yaxe.min !== undefined) {
+        if (typeof yaxe.min === 'number') {
+          gl.minYArr[index] = yaxe.min
+        } else if (typeof yaxe.min === 'function') {
+          // fixes apexcharts.js/issues/2098
+          gl.minYArr[index] = yaxe.min(
+            gl.isMultipleYAxis
+              ? gl.minYArr[index] === Number.MIN_VALUE
+                ? 0
+                : gl.minYArr[index]
+              : gl.minY
+          )
         }
-      })
+        // gl.minY is for single y-axis chart, it will be ignored in multi-yaxis
+        gl.minY = gl.minYArr[index]
+      }
     })
 
     // for horizontal bar charts, we need to check xaxis min/max as user may have specified there
@@ -213,17 +223,18 @@ class Range {
       })
     } else {
       this.scales.setYScaleForIndex(0, gl.minY, gl.maxY)
+      console.log(gl.yAxisScale)
       gl.minY = gl.yAxisScale[0].niceMin
       gl.maxY = gl.yAxisScale[0].niceMax
       gl.minYArr[0] = gl.yAxisScale[0].niceMin
       gl.maxYArr[0] = gl.yAxisScale[0].niceMax
     }
-
     return {
       minY: gl.minY,
       maxY: gl.maxY,
       minYArr: gl.minYArr,
-      maxYArr: gl.maxYArr
+      maxYArr: gl.maxYArr,
+      yAxisScale: gl.yAxisScale
     }
   }
 
