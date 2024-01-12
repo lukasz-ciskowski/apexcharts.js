@@ -223,7 +223,6 @@ class Range {
       })
     } else {
       this.scales.setYScaleForIndex(0, gl.minY, gl.maxY)
-      console.log(gl.yAxisScale)
       gl.minY = gl.yAxisScale[0].niceMin
       gl.maxY = gl.yAxisScale[0].niceMax
       gl.minYArr[0] = gl.yAxisScale[0].niceMin

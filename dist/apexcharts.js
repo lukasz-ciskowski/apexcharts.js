@@ -1,6 +1,6 @@
 /*!
- * ApexCharts v3.26.1
- * (c) 2018-2023 Juned Chhipa
+ * ApexCharts v3.26.2
+ * (c) 2018-2024 Juned Chhipa
  * Released under the MIT License.
  */
 (function (global, factory) {
@@ -9586,7 +9586,6 @@
           });
         } else {
           this.scales.setYScaleForIndex(0, gl.minY, gl.maxY);
-          console.log(gl.yAxisScale);
           gl.minY = gl.yAxisScale[0].niceMin;
           gl.maxY = gl.yAxisScale[0].niceMax;
           gl.minYArr[0] = gl.yAxisScale[0].niceMin;
